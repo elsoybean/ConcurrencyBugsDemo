@@ -27,6 +27,10 @@ namespace ConcurrencyBugsDemo
             var result = implementation.CalculateTwoPlusTwo();
             Assert.AreEqual(RightAnswer, result);
 
+            implementation = SingletonTwoPlusTwo.Instance;
+            result = implementation.CalculateTwoPlusTwo();
+            Assert.AreEqual(RightAnswer, result);
+
             implementation = new InstanceTwoPlusTwo();
             result = implementation.CalculateTwoPlusTwo();
             Assert.AreEqual(RightAnswer, result);
@@ -57,7 +61,23 @@ namespace ConcurrencyBugsDemo
         }
 
         [Test]
-        public void C_Unsafe_InstanceImplementation()
+        public void C_Unsafe_SingletonImplementation()
+        {
+            var results = new ConcurrentBag<int>();
+            var opt = new ParallelOptions { MaxDegreeOfParallelism = Iterations };
+
+            Parallel.For(0, Iterations, opt, i =>
+            {
+                ITwoPlusTwo implementation = SingletonTwoPlusTwo.Instance;
+                var result = implementation.CalculateTwoPlusTwo();
+                results.Add(result);
+            });
+
+            Assert.IsEmpty(results.Where(r => r != RightAnswer));
+        }
+
+        [Test]
+        public void D_Unsafe_InstanceImplementation()
         {
             var results = new ConcurrentBag<int>();
             var opt = new ParallelOptions { MaxDegreeOfParallelism = Iterations };
@@ -74,7 +94,7 @@ namespace ConcurrencyBugsDemo
         }
 
         [Test]
-        public void D_Safe_StaticImplementation_SingleThreaded()
+        public void E_Safe_StaticImplementation_SingleThreaded()
         {           
             // Here we guarantee thread safety by eliminating parallelism, but this has a big performance impact
             var results = new ConcurrentBag<int>();
@@ -90,7 +110,7 @@ namespace ConcurrencyBugsDemo
         }
 
         [Test]
-        public void E_Safe_InstanceImplementation_ThreadLocalInstances()
+        public void F_Safe_InstanceImplementation_ThreadLocalInstances()
         {
             // Here we guarantee thread safety by giving each thread its own instance, but this is not always possible or desirable
             var results = new ConcurrentBag<int>();
@@ -108,7 +128,7 @@ namespace ConcurrencyBugsDemo
         }
 
         [Test]
-        public void F_Safe_InstanceImplementation_WithLocks()
+        public void G_Safe_InstanceImplementation_WithLocks()
         {
             // Here we guarantee thread safety by using a thread safe implementation.
             // Care must be taken when modifying the implementation that we maintain the thread safety
@@ -127,7 +147,7 @@ namespace ConcurrencyBugsDemo
         }
 
         [Test]
-        public void G_Safe_LocalImplementation_WithLocks()
+        public void H_Safe_LocalImplementation_WithLocks()
         {
             // Here we guarantee thread safety by not using any instance properties in the implementation.
             // This is not always possible, and care must still be taken not to add them in the future.
