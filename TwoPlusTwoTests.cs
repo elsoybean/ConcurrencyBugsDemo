@@ -147,7 +147,7 @@ namespace ConcurrencyBugsDemo
         }
 
         [Test]
-        public void H_Safe_LocalImplementation_WithLocks()
+        public void H_Safe_LocalImplementation()
         {
             // Here we guarantee thread safety by not using any instance properties in the implementation.
             // This is not always possible, and care must still be taken not to add them in the future.
